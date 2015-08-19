@@ -63,7 +63,8 @@ if ($stage eq 'c') {
 
 my @spred = @{get_layers("spectral")}; # read from file list of layers "spectral"
 my @tpred = @{get_layers("textural")}; # read from file list of layers "textural" - say, perhaps just the panchromatic band, or PCA.1 etc
-#my %textures = (
+
+#my %textures = ( # This is the full gammut of possible textural measures.  Copy and reduce as needed.
 #a => 'ASM',
 #c => 'Contr',
 #k => 'Corr',
@@ -76,13 +77,16 @@ my @tpred = @{get_layers("textural")}; # read from file list of layers "textural
 #x => 'SV',
 #v => 'Var'
 #); # ALPHABETICAL ORDER!!! hash of r.texture flag => prefix to be used in textural measures
+
 my %textures = (
 s => 'SA',
 x => 'SV'
 ); # ALPHABETICAL ORDER!!! hash of r.texture flag => prefix to be used in textural measures
+
 my $training_points = 'training'; # vector file with classes in "class" column
 my @scales = (3,7,15,25);
 my @tscales = (3);
+my $normalise = 1; #Change if normalised layers don't seem to contribute to accuracy
 my $alternate_resolution = undef; # make undef if you don't want to use a larger scale in the textural measures
 my @aggregates = ('average','stddev'); # Changing this will break it
 my @predictors;
@@ -333,11 +337,13 @@ sub create_multiscale_layers {
                                 push @predictors, "S$counter";
 				push @twoaggs, "S$counter";
                         }
-                	$counter++;
-                        print "Normalising $spectral scale $scale...\n";
-                        system "r.mapcalc 'N$counter = (float($spectral) - $twoaggs[0])/$twoaggs[1] ' " unless $repeat;
-			$codes{"N$counter"} = "$spectral.$scale.norm";
-                        push @predictors, "N$counter";
+			if ($normalise) {
+                		$counter++;
+                	        print "Normalising $spectral scale $scale...\n";
+                	        system "r.mapcalc 'N$counter = (float($spectral) - $twoaggs[0])/$twoaggs[1] ' " unless $repeat;
+				$codes{"N$counter"} = "$spectral.$scale.norm";
+                	        push @predictors, "N$counter";
+			}
                 }
         }
         $counter = 0;
@@ -349,7 +355,7 @@ sub create_multiscale_layers {
                 	$counter++;
                 	$codes{"T$counter"} = "$textural.$tscale";
                         print "creating textures for scale $tscale...\n";
-                        system "r.texture -$flagstring $tex_rescaled pre=T$counter --o ";# unless $repeat;
+                        system "r.texture -$flagstring $tex_rescaled pre=T$counter --o " unless $repeat;
                         add_predictors_to_list("T$counter");
                 }
         }
