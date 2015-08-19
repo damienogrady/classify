@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 #
-####################################################################################
+#####################################################################################
 # This script works in Grass6.x (hopefully).
 #
 # The script uses training data from a vector in Grass to create a random forest
@@ -82,8 +82,8 @@ x => 'SV'
 ); # ALPHABETICAL ORDER!!! hash of r.texture flag => prefix to be used in textural measures
 my $training_points = 'training'; # vector file with classes in "class" column
 my @scales = (3,7,15,25);
-my @tscales = (3,7,15);
-my $alternate_resolution = 0.1; # make undef if you don't want to use a larger scale in the textural measures
+my @tscales = (3);
+my $alternate_resolution = undef; # make undef if you don't want to use a larger scale in the textural measures
 my @aggregates = ('average','stddev'); # Changing this will break it
 my @predictors;
 my %codes;
@@ -349,7 +349,7 @@ sub create_multiscale_layers {
                 	$counter++;
                 	$codes{"T$counter"} = "$textural.$tscale";
                         print "creating textures for scale $tscale...\n";
-                        system "r.texture -$flagstring $tex_rescaled pre=T$counter --o " unless $repeat;
+                        system "r.texture -$flagstring $tex_rescaled pre=T$counter --o ";# unless $repeat;
                         add_predictors_to_list("T$counter");
                 }
         }
@@ -363,11 +363,13 @@ sub rescale_textural {
 	my $name = "$textural.r";
 	if (defined $alternate_resolution) {
 		system "r.resamp.stats $textural out=$textural.temp1 met=average --o ";
-		system "r.rescale $textural.temp1 out=$textural.temp2 to=0,255 ";
-		system "r.mapcalc '$textural.r = if(isnull($textural.temp2),0,$textural.temp2)' ";
+		system "r.rescale $textural.temp1 out=$textural.temp2 to=0,255 --o";
+		system "r.mapcalc '$name = if(isnull($textural.temp2),0,$textural.temp2)' ";
 		system "g.remove $textural.temp1,$textural.temp2 -f ";
 	} else {
-		system "r.mapcalc '$name = if(isnull($textural),0,$textural)' ";
+		system "r.rescale $textural out=$textural.temp2 to=0,255 --o";
+		system "r.mapcalc '$name = if(isnull($textural.temp2),0,$textural.temp2)' ";
+		system "g.remove $textural.temp2 -f ";
 	}
 	return $name;
 }
