@@ -257,12 +257,14 @@ rfPredict <- function(rf, imagefile, bandnames, imageout=paste0('p_',imagefile))
     ulimit <- ifelse(ulimit > ncell(s), ncell(s), ulimit)
     newd<-s[llimit:ulimit]
     newd[is.na(newd)] <- 0
-    out[llimit:ulimit]<-predict(rf,newdata=newd,type='prob')[,2] # Now exports probability of DFT
+    # out[llimit:ulimit]<-predict(rf,newdata=newd,type='prob')[,2] # Use this if extracting probs.  Change to suit column required.
+    out[llimit:ulimit]<-predict(rf,newdata=newd)
   }
   print(proc.time() - ptm)
 
   values(o)<-out
-  writeRaster(o,imageout,'GTiff',datatype='FLT4S', overwrite=T)
+  # writeRaster(o,imageout,'GTiff',datatype='FLT4S', overwrite=T) # Use this one if extracting probs
+  writeRaster(o,imageout,'GTiff',datatype='INT1U', overwrite=T)
   return(1)
 }
 
