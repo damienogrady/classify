@@ -1,7 +1,7 @@
 # classify
 Multiscale classification using Random Forest in R through GRASS GIS.  Tiles to manage large files.  Incorporates spectral and textural measures.
 
-This script works in Grass6.x (hopefully).
+This script works in Grass6.x.
 
 The script uses training data from a vector in Grass to create a random forest
 object.  It then creates a multilayer tiff file in Grass, which is tiled and fed
