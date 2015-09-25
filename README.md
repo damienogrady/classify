@@ -39,5 +39,5 @@ it will be maintained.
 
 Cheers
 
-Damien.O'Grady
+Damien O'Grady
 11 August 2015
